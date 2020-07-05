@@ -1,11 +1,12 @@
 <template>
   <div class="relative">
     <template v-if="shouldDisplay()">
-      <template v-if="field.children.length > 0">
+      <template v-if="field.children && field.children.length > 0">
         <card
-          :class="{ 'overflow-hidden': field.panel && !index }"
+          :class="{ 'overflow-hidden': field.panel && !index, 'blah': true }"
           :key="child.id || child.key"
           v-for="(child, childIndex) in field.children"
+          v-bind:style="getStyle(childIndex)"
         >
           <nested-form-header
             :child="child"
@@ -91,6 +92,12 @@ export default {
     }
   },
   methods: {
+    getStyle(index) {
+        return index
+          ? { borderRadius: 0 }
+          : {}
+    },
+
     /**
      * Fill the given FormData object with the field's internal value.
      */
@@ -102,7 +109,9 @@ export default {
             child[this.field.keyName]
           )
         }
-        child.fields.forEach(field => field.fill(formData))
+        child.fields.forEach(field => {
+          field.fill(formData)
+        })
       })
 
       const regex = /(.*?(?:\[.*?\])+)(\[.*?)\]((?!\[).+)$/
@@ -232,6 +241,13 @@ export default {
     if (this.field.displayIf) {
       this.setConditions()
     }
+
+    // Mutate the validation key to fix error not showing bug
+    this.field.children.forEach(child => {
+      child.fields.forEach(field => {
+        field.validationKey =  field.attribute;
+      })
+    })
   }
 }
 </script>
